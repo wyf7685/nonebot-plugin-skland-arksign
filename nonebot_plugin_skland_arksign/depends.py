@@ -1,3 +1,6 @@
+from typing import Annotated
+
+from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot.matcher import Matcher
 from nonebot.adapters import Bot, Event
@@ -19,3 +22,6 @@ async def skland_session_extract(bot: Bot, event: Event, matcher: Matcher, state
             await matcher.finish("请在私聊中使用该指令！")
 
     return session
+
+
+EventSession = Annotated[Session, Depends(skland_session_extract)]

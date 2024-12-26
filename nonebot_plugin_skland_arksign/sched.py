@@ -5,7 +5,7 @@ from sqlalchemy import select
 from nonebot.log import logger
 from nonebot_plugin_orm import get_session
 from nonebot_plugin_apscheduler import scheduler
-from nonebot_plugin_saa import Text, PlatformTarget
+from nonebot_plugin_alconna import Target, UniMessage
 
 from .model import SklandSubscribe
 from .signin import SignResult, run_signin
@@ -22,12 +22,12 @@ async def sched_sign():
         result = await session.scalars(stmt)
         subscribes = result.all()
 
-    sub_groups: dict[PlatformTarget, list[SignResult]] = {}
+    sub_groups: dict[Target, list[SignResult]] = {}
     for sub in subscribes:
-        target = PlatformTarget.deserialize(sub.user)
-        logger.debug(f"target: {target.dict()}")
+        target = Target.load(sub.user)
+        logger.debug(f"target: {sub.user}")
         if not sub.token:
-            await Text(f"账号{sub.uid}未绑定Token，请重新绑定！").send_to(target)
+            await UniMessage(f"账号{sub.uid}未绑定Token，请重新绑定！").send(target)
             continue
         result = await run_signin(uid=sub.uid, token=sub.token)
         logger.info(f"uid: {sub.uid}, result: {result.status}")
@@ -41,6 +41,6 @@ async def sched_sign():
     for target, results in sub_groups.items():
         msg_header = "[森空岛明日方舟签到器]执行定时任务！\n\n"
         merge_result_text = "\n----------\n".join(i.text for i in results)
-        msg = Text(msg_header + merge_result_text)
-        await msg.send_to(target)
+        msg = UniMessage(msg_header + merge_result_text)
+        await msg.send(target)
         await asyncio.sleep(0.2)

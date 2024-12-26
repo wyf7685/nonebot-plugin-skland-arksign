@@ -13,22 +13,23 @@ from httpx import AsyncClient
 from .constants import CONSTANTS
 from .config import plugin_config
 
-if plugin_config.skland_sm_method_identifier == 0:
-    from .did.api import get_did as get_did
-elif plugin_config.skland_sm_method_identifier == 1:
-    try:
-        from .did.local_simulate import get_did as get_did
-    except Exception:
+match plugin_config.skland_sm_method_identifier:
+    case 0:
         from .did.api import get_did as get_did
+    case 1:
+        try:
+            from .did.local_simulate import get_did as get_did
+        except Exception:
+            from .did.api import get_did as get_did
 
-        logger.warning("请安装 nonebot-plugin-skland-arksign[sm_local]！")
-elif plugin_config.skland_sm_method_identifier == 2:
-    try:
-        from .did.html_simulate import get_did as get_did
-    except Exception:
-        from .did.api import get_did as get_did
+            logger.warning("请安装 nonebot-plugin-skland-arksign[sm_local]！")
+    case 2:
+        try:
+            from .did.html_simulate import get_did as get_did
+        except Exception:
+            from .did.api import get_did as get_did
 
-        logger.warning("请安装 nonebot-plugin-skland-arksign[sm_htmlrender]！")
+            logger.warning("请安装 nonebot-plugin-skland-arksign[sm_htmlrender]！")
 
 
 @dataclass(frozen=True)
